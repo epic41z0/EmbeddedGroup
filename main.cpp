@@ -15,10 +15,12 @@ int numbViews(int payment) {
 void displayMessage(const char *message, bool scroll = false, bool blink = false) {
     lcd.clear();
 
-    if (scroll) {
-        int messageLength = strlen(message);
+    int messageLength = strlen(message);
+
+    if (scroll && messageLength > 16) {
         for (int i = 0; i <= messageLength + 16; ++i) {
             int offset = i - 16;
+
             lcd.setCursor(0, 0);
             for (int j = 0; j < 16; ++j) {
                 if (offset + j >= 0 && offset + j < messageLength) {
@@ -29,42 +31,38 @@ void displayMessage(const char *message, bool scroll = false, bool blink = false
             }
 
             lcd.setCursor(0, 1);
-            for (int j = 0; j < 16; ++j) {
-                int charIndex = i + j;
-                if (charIndex >= 0 && charIndex < messageLength) {
-                    lcd.write(message[charIndex]);
-                } else {
-                    lcd.write(' ');
-                }
-            }
-
             delay(200);
         }
     } else {
-        int x = (16 - strlen(message)) / 2;
-        lcd.setCursor(x, 0);
-        if (x < 0) {
-            lcd.setCursor(0, 0);
-        }
+        lcd.setCursor(0, 0);
         lcd.print(message);
 
+        if (messageLength > 16) {
+            lcd.setCursor(0, 1);
+            for (int i = 16; i < messageLength + 16; ++i) {
+                lcd.write(message[i]);
+            }
+        }
+
         if (blink) {
-            for (int blinkCount = 0; blinkCount < 5; ++blinkCount) {
+            unsigned long startTime = millis();
+            while (millis() - startTime < 2000) {
                 delay(500);
                 lcd.clear();
                 delay(500);
-                lcd.setCursor(x, 0);
+                lcd.setCursor(0, 0);
                 lcd.print(message);
             }
         }
     }
 }
 
+
 void displayRandomMessage(const char *messages[], const bool scroll[], const bool blink[], int payment) {
     int len = sizeof(messages) / sizeof(messages[0]);
     int randomIndex = random(0, len);
     displayMessage(messages[randomIndex], scroll[randomIndex], blink[randomIndex]);
-    delay(20000);
+    delay(2000);
 }
 
 void displayAlternateMessage(const char *message1, const char *message2, const bool scroll[], const bool blink[], int payment) {
@@ -76,7 +74,7 @@ void displayAlternateMessage(const char *message1, const char *message2, const b
     } else {
         displayMessage(message2, scroll[0], blink[0]);
     }
-    delay(20000);
+    delay(2000);
 }
 
 int randomCustomerNumber(const int freqList[], int len, int previousCustomer = -1) {
@@ -107,7 +105,7 @@ void loop() {
     const bool harryScroll[] = {true, false, false};
     const bool harryBlink[] = {false, false, true};
     const char *farmorMessages[] = {"Kop paj hos Farmor Anka", "Skynda innan Marten atit alla pajer"};
-    const bool farmorScroll[] = {true, false};
+    const bool farmorScroll[] = {true, true};
     const bool farmorBlink[] = {false, false};
     const char *petterMessages[] = {"Lat Petter bygga at dig", "Bygga svart? Ring Petter"};
     const bool petterScroll[] = {true, false};
@@ -146,7 +144,7 @@ void loop() {
     for (int i = 0; i < 29; i++) {
         switch (curreCustomer) {
             case 0:
-                displayMessage(harryMessages[2], false, true);  // Display "Hederlige Harrys Bilar" with scrolling and blinking
+                displayMessage(harryMessages[0], harryScroll[0], harryBlink[0]);
                 break;
             case 1:
                 displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
@@ -164,9 +162,9 @@ void loop() {
 
         previousCustomer = curreCustomer;
         curreCustomer = randomCustomerNumber(customersFreqList, totLength, previousCustomer);
-    }
+  }
 
-    delay(2000);
+    delay(20000);
 
     lcd.clear();
     lcd.setCursor(0, 0);
