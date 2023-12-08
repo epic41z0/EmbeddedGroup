@@ -74,9 +74,9 @@ void displayAlternateMessage(const char *message1, const char *message2, const b
     bool isEvenMinute = (currentMinute % 2 == 0);
 
     if (isEvenMinute) {
-        displayMessage(message1, true, blink[0]);  
+        displayMessage(message1, true, blink[1]);  
     } else {
-        displayMessage(message2, true, blink[0]);  
+        displayMessage(message2, true, blink[1]);  
     }
     delay(2000);
 }
