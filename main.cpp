@@ -9,59 +9,63 @@ int random(int min, int max) {
 }
 
 int numbViews(int payment) {
-    return int(float(payment) / 1000 * 2); // 2 views per 1000kr
+    return int(float(payment) / 1000 * 2); 
 }
 
-void displayMessage(const char *message, bool scroll = false, bool blink = true) {
+void displayMessage(const char *message, bool scroll = true, bool blink = true) {
     lcd.clear();
+    lcd.setCursor(0, 0);
 
-    int messageLength = strlen(message);
+    if (strcmp(message, "Hederlige Harrys Bilar") == 0 && blink) {
+        for (int blinkCount = 0; blinkCount < 5; ++blinkCount) {
+            lcd.print(message);
+            lcd.setCursor(0, 1);
+            lcd.print("Bilar");
+            delay(500);
+            lcd.clear();
+            delay(500);
+        }
+    } else {
+        lcd.print(message);
 
-    if (scroll && messageLength > 16) {
-        for (int i = 0; i <= messageLength + 16; ++i) {
-            int offset = i - 16;
+        if (scroll) {
+            int messageLength = strlen(message);
+            for (int i = 0; i <= messageLength + 16; ++i) {
+                int offset = i - 16;
 
-            lcd.setCursor(0, 0);
-            for (int j = 0; j < 16; ++j) {
-                if (offset + j >= 0 && offset + j < messageLength) {
-                    lcd.write(message[offset + j]);
-                } else {
-                    lcd.write(' ');
+                lcd.setCursor(0, 0);
+                for (int j = 0; j < 16; ++j) {
+                    if (offset + j >= 0 && offset + j < messageLength) {
+                        lcd.write(message[offset + j]);
+                    } else {
+                        lcd.write(' ');
+                    }
+                }
+
+                lcd.setCursor(0, 1);
+                lcd.print(" ");
+                delay(200);
+            }
+        } else {
+            int messageLength = strlen(message);
+            if (messageLength > 16) {
+                lcd.setCursor(15, 0);
+                for (int i = 16; i < messageLength + 16; ++i) {
+                    lcd.write(message[i]);
                 }
             }
 
             lcd.setCursor(0, 1);
-            delay(200);
-        }
-    } else {
-        lcd.setCursor(0, 0);
-        lcd.print(message);
-
-        if (messageLength > 16) {
-            lcd.setCursor(15, 0);
-            for (int i = 16; i < messageLength + 16; ++i) {
-                lcd.write(message[i]);
-            }
-        }
-
-        if (blink) {
-            unsigned long startTime = millis();
-            while (millis() - startTime < 2000) {
-                delay(500);
-                lcd.clear();
-                delay(500);
-                lcd.setCursor(0, 0);
-                lcd.print(message);
-            }
+            lcd.print(" ");
+            delay(2000);
         }
     }
 }
 
-
 void displayRandomMessage(const char *messages[], const bool scroll[], const bool blink[], int payment) {
     int len = sizeof(messages) / sizeof(messages[0]);
     int randomIndex = random(0, len);
-    displayMessage(messages[randomIndex], scroll[randomIndex], blink[randomIndex]);
+    displayMessage(messages[randomIndex], true, blink[randomIndex]);  // Always scroll the message
     delay(2000);
 }
 
@@ -70,9 +74,9 @@ void displayAlternateMessage(const char *message1, const char *message2, const b
     bool isEvenMinute = (currentMinute % 2 == 0);
 
     if (isEvenMinute) {
-        displayMessage(message1, scroll[0], blink[0]);
+        displayMessage(message1, true, blink[0]);  
     } else {
-        displayMessage(message2, scroll[0], blink[0]);
+        displayMessage(message2, true, blink[0]);  
     }
     delay(2000);
 }
@@ -94,7 +98,10 @@ void setup() {
     lcd.print("Booting...");
     lcd.setCursor(0, 0);
 
-    // Randomiserar företag vid start
+    Serial.begin(9600);  
+    delay(1000);  
+    Serial.println("Initialization complete");
+
     randomSeed(analogRead(0));
 }
 
@@ -108,14 +115,14 @@ void loop() {
     const bool farmorScroll[] = {true, true};
     const bool farmorBlink[] = {false, false};
     const char *petterMessages[] = {"Lat Petter bygga at dig", "Bygga svart? Ring Petter"};
-    const bool petterScroll[] = {true, false};
+    const bool petterScroll[] = {true, true};
     const bool petterBlink[] = {false, false};
     const char *langbenMessages[] = {"Mysterier? Ring Langben", "Langben fixar biffen"};
-    const bool langbenScroll[] = {false, false};
+    const bool langbenScroll[] = {true, true};
     const bool langbenBlink[] = {false, false};
     const char *iotMessages[] = {"Synas har? IOT:s Reklambyra"};
-    const bool iotScroll[] = {true};
-    const bool iotBlink[] = {false};
+    const bool iotScroll[] = {true, true};
+    const bool iotBlink[] = {false, false};
 
     int harryPayment = 5000;
     int farmorPayment = 3000;
@@ -144,29 +151,50 @@ void loop() {
     for (int i = 0; i < 29; i++) {
         switch (curreCustomer) {
             case 0:
-                displayMessage(harryMessages[1], harryScroll[0], harryBlink[1]);
+                Serial.println("Displaying Kop bil hos Harry");
+                Serial.print("Message: "); Serial.println(harryMessages[0]);
+                Serial.print("Scroll: "); Serial.println(harryScroll[0]);
+                Serial.print("Blink: "); Serial.println(harryBlink[0]);
+                displayMessage(harryMessages[0], harryScroll[0], harryBlink[0]);
                 break;
             case 1:
-                displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
+                Serial.println("Displaying En god bilaffar (for Harry!)");
+                Serial.print("Message: "); Serial.println(harryMessages[1]);
+                Serial.print("Scroll: "); Serial.println(false);
+                Serial.print("Blink: "); Serial.println(false);
+                displayMessage(harryMessages[1], false, false);
                 break;
             case 2:
-                displayAlternateMessage(petterMessages[0], petterMessages[1], petterScroll, petterBlink, petterPayment);
+                Serial.println("Displaying Hederlige Harrys Bilar");
+                Serial.print("Message: "); Serial.println(harryMessages[2]);
+                Serial.print("Scroll: "); Serial.println(harryScroll[2]);
+                Serial.print("Blink: "); Serial.println(harryBlink[2]);
+                displayMessage(harryMessages[2], harryScroll[2], harryBlink[2]);
                 break;
             case 3:
-                displayRandomMessage(langbenMessages, langbenScroll, langbenBlink, langbenPayment);
+                displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
                 break;
             case 4:
+                displayAlternateMessage(petterMessages[0], petterMessages[1], petterScroll, petterBlink, petterPayment);
+                break;
+            case 5:
+                displayRandomMessage(langbenMessages, langbenScroll, langbenBlink, langbenPayment);
+                break;
+            case 6:
                 displayRandomMessage(iotMessages, iotScroll, iotBlink, iotPayment);
                 break;
         }
 
         previousCustomer = curreCustomer;
         curreCustomer = randomCustomerNumber(customersFreqList, totLength, previousCustomer);
-  }
+    }
 
     delay(20000);
 
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Restarting...");
+
+    Serial.println("Restarting...");
+    delay(5000);  
 }
