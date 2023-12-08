@@ -12,7 +12,7 @@ int numbViews(int payment) {
     return int(float(payment) / 1000 * 2); // 2 views per 1000kr
 }
 
-void displayMessage(const char *message, bool scroll = false, bool blink = false) {
+void displayMessage(const char *message, bool scroll = false, bool blink = true) {
     lcd.clear();
 
     int messageLength = strlen(message);
@@ -38,7 +38,7 @@ void displayMessage(const char *message, bool scroll = false, bool blink = false
         lcd.print(message);
 
         if (messageLength > 16) {
-            lcd.setCursor(0, 1);
+            lcd.setCursor(15, 0);
             for (int i = 16; i < messageLength + 16; ++i) {
                 lcd.write(message[i]);
             }
@@ -144,7 +144,7 @@ void loop() {
     for (int i = 0; i < 29; i++) {
         switch (curreCustomer) {
             case 0:
-                displayMessage(harryMessages[0], harryScroll[0], harryBlink[0]);
+                displayMessage(harryMessages[1], harryScroll[0], harryBlink[1]);
                 break;
             case 1:
                 displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
