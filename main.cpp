@@ -2,6 +2,16 @@
 #include <LiquidCrystal.h>
 #include <TimeLib.h>
 
+
+void setup();
+void loop();
+int random(int min, int max);
+int numbViews(int payment);
+void displayMessage(const char *message, bool scroll = false, bool blink = false);
+void displayRandomMessage(const char *messages[], const bool scroll[], const bool blink[], int payment);
+void displayAlternateMessage(const char *message1, const char *message2, const bool scroll[], const bool blink[], int payment);
+int randomCustomerNumber(const int freqList[], int len, int previousCustomer = -1);
+
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 int random(int min, int max) {
@@ -14,9 +24,8 @@ int numbViews(int payment) {
 
 void displayMessage(const char *message, bool scroll = false, bool blink = false) {
     lcd.clear();
-
     int messageLength = strlen(message);
-
+    
     if (scroll && messageLength > 16) {
         for (int i = 0; i <= messageLength + 16; ++i) {
             int offset = i - 16;
@@ -32,37 +41,44 @@ void displayMessage(const char *message, bool scroll = false, bool blink = false
 
             lcd.setCursor(0, 1);
             delay(200);
-        }
-    } else {
-        lcd.setCursor(0, 0);
-        lcd.print(message);
-
-        if (messageLength > 16) {
-            lcd.setCursor(0, 1);
-            for (int i = 16; i < messageLength + 16; ++i) {
-                lcd.write(message[i]);
-            }
-        }
-
-        if (blink) {
+          }
+      } else {
+        if (blink && strcmp(message, "Hederlige Harrys Bilar") == 0) {
             for (int blinkCount = 0; blinkCount < 5; ++blinkCount) {
-                delay(20000);
-                
-                
+                lcd.clear();
+                delay(500);
                 lcd.setCursor(0, 0);
-                lcd.print(message);
-                
+                lcd.print("Hederlige Harrys"); // Första ordet
+                lcd.setCursor(0, 1);
+                lcd.print("Bilar"); 
+                delay(500);
+                lcd.clear();
+                delay(500);
+            }
+            lcd.setCursor(0, 0);
+            lcd.print("Hederlige Harrys"); // Första ordet
+            lcd.setCursor(0, 1);
+            lcd.print("Bilar"); 
+        }else {
+            lcd.setCursor(0, 0);
+            lcd.print(message);
+
+            if (messageLength > 16) {
+                lcd.setCursor(0, 1);
+                for (int i = 16; i < messageLength + 16; ++i) {
+                    lcd.write(message[i]);
+                }
             }
         }
     }
-}
+} 
 
 
 void displayRandomMessage(const char *messages[], const bool scroll[], const bool blink[], int payment) {
     int len = sizeof(messages) / sizeof(messages[0]);
     int randomIndex = random(0, len);
     displayMessage(messages[randomIndex], scroll[randomIndex], blink[randomIndex]);
-    delay(20000);
+    delay(2000);
 }
 
 void displayAlternateMessage(const char *message1, const char *message2, const bool scroll[], const bool blink[], int payment) {
@@ -89,20 +105,20 @@ int randomCustomerNumber(const int freqList[], int len, int previousCustomer = -
     }
 }
 
-void setup() {
+void setup(){
     lcd.begin(16, 2);
     lcd.print("Booting...");
     lcd.setCursor(0, 0);
 
-    // Randomiserar företag vid start
+    // Randomiserar fÃ¶retag vid start
     randomSeed(analogRead(0));
 }
 
 void loop() {
-    const int displayDuration = 20000;
+    const int displayDuration = 2000;
 
     const char *harryMessages[] = {"Kop bil hos Harry", "En god bilaffar(for Harry!)", "Hederlige Harrys Bilar"};
-    const bool harryScroll[] = {true, false, false};
+    const bool harryScroll[] = {true, true, false};
     const bool harryBlink[] = {false, false, true};
     const char *farmorMessages[] = {"Kop paj hos Farmor Anka", "Skynda innan Marten atit alla pajer"};
     const bool farmorScroll[] = {true, true};
@@ -144,7 +160,7 @@ void loop() {
     for (int i = 0; i < 29; i++) {
         switch (curreCustomer) {
             case 0:
-                displayMessage(harryMessages[0], harryScroll[0], harryBlink[0]);
+                displayMessage(harryMessages[2], harryScroll[2], harryBlink[2]);
                 break;
             case 1:
                 displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
@@ -162,9 +178,9 @@ void loop() {
 
         previousCustomer = curreCustomer;
         curreCustomer = randomCustomerNumber(customersFreqList, totLength, previousCustomer);
-  }
+    }
 
-    delay(20000);
+    delay(2000);
 
     lcd.clear();
     lcd.setCursor(0, 0);
