@@ -65,7 +65,7 @@ void displayMessage(const char *message, bool scroll = false, bool blink = false
 
             if (messageLength > 16) {
                 lcd.setCursor(0, 1);
-                for (int i = 16; i < messageLength + 16; ++i) {
+                for (int i = 16; i < messageLength; ++i) {
                     lcd.write(message[i]);
                 }
             }
@@ -90,7 +90,7 @@ void displayAlternateMessage(const char *message1, const char *message2, const b
     } else {
         displayMessage(message2, scroll[0], blink[0]);
     }
-    delay(20000);
+    delay(2000);
 }
 
 int randomCustomerNumber(const int freqList[], int len, int previousCustomer = -1) {
@@ -110,7 +110,7 @@ void setup(){
     lcd.print("Booting...");
     lcd.setCursor(0, 0);
 
-    // Randomiserar fÃ¶retag vid start
+
     randomSeed(analogRead(0));
 }
 
@@ -118,7 +118,7 @@ void loop() {
     const int displayDuration = 2000;
 
     const char *harryMessages[] = {"Kop bil hos Harry", "En god bilaffar(for Harry!)", "Hederlige Harrys Bilar"};
-    const bool harryScroll[] = {true, true, false};
+    const bool harryScroll[] = {true, false, false};
     const bool harryBlink[] = {false, false, true};
     const char *farmorMessages[] = {"Kop paj hos Farmor Anka", "Skynda innan Marten atit alla pajer"};
     const bool farmorScroll[] = {true, true};
@@ -161,6 +161,7 @@ void loop() {
         switch (curreCustomer) {
             case 0:
                 displayMessage(harryMessages[2], harryScroll[2], harryBlink[2]);
+                displayRandomMessage(harryMessages, harryScroll, harryBlink, harryPayment);
                 break;
             case 1:
                 displayRandomMessage(farmorMessages, farmorScroll, farmorBlink, farmorPayment);
